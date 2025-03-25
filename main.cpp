@@ -26,15 +26,28 @@ int main()
     {57.0, 167.3804}, {58.0, 168.0454}, {59.0, 168.7656}
     };
 
-    double a, b;
-    Regression::linearLeastSquares(points, a, b);
+	std::vector<std::vector<Point>> trends = Regression::SimpleParser(points);
 
-    std::cout << "Best fit line: y = " << a << "x + " << b << std::endl;
+	for (std::vector<Point> section : trends) {
+		std::cout << "New Section:" << std::endl;
+		for (Point p : section) {
+			std::cout << p.x << " " << p.y << std::endl;
+		}
+		std::cout << std::endl;
+	}
 
-    double A, B, C;
-    Regression::quadraticLeastSquares(points, A, B, C);
+    //double A, B, C;
+    //Regression::quadraticLeastSquares(trends[0], A, B, C);
+    //std::cout << "Best fit curve: y = " << A << "x^2 + " << B << "x + " << C << std::endl;
+    //
+    //double a, b;
+    //Regression::linearLeastSquares(trends[1], a, b);
+    //
+    //std::cout << "Best fit line: y = " << a << "x + " << b << std::endl;
 
-    std::cout << "Best fit curve: y = " << A << "x^2 + " << B << "x + " << C << std::endl;
+    
+
+    
     return 0;
 }
 
