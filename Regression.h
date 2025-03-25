@@ -14,5 +14,5 @@ namespace Regression {
 
 	double SUM(std::vector<xyEnumerator> values, std::vector<Point> points);
 
-	double SUM(std::vector<char> values, std::vector<Point> points));
+	double SUM(std::vector<char> values, std::vector<Point> points);
 }
