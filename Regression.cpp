@@ -2,17 +2,17 @@
 
 std::vector<std::vector<Point>> Regression::SimpleParser(std::vector<Point> points)
 {
-	std::vector<std::vector<Point>> trends;
-	std::vector<Point> section;
+	std::vector<std::vector<Point>> subgroupList;
+	std::vector<Point> subgroup;
     double largestSlope = 0;
     double previousSlope = 0;
     Point previousPoint{ 0, 0 };
     
 
     for (Point p : points) {
-        //first section
-        if (section.size() == 0) {
-            section.push_back(p);
+        //first subgroup
+        if (subgroup.size() == 0) {
+            subgroup.push_back(p);
             previousPoint = p;
             continue;
         }
@@ -22,16 +22,17 @@ std::vector<std::vector<Point>> Regression::SimpleParser(std::vector<Point> poin
 		double slope = (p.y - previousPoint.y) / (p.x - previousPoint.x);
 
         //check slope
-        if (
-            ( abs(slope) > (abs(largestSlope) * 4 ) )
+        if
+        (
+            ( abs(slope) > (abs(largestSlope) * 3 ) )
             &&
-            ( section.size() > 3 )
-            ) {
-            
-            //start new section
-			trends.push_back(section);
-			section.clear();
-			section.push_back(p);
+            ( subgroup.size() > 3 )
+        ) 
+        {  
+            //start new subgroup
+			subgroupList.push_back(subgroup);
+			subgroup.clear();
+			subgroup.push_back(p);
             previousPoint = p;
 
             largestSlope = 0;
@@ -39,14 +40,14 @@ std::vector<std::vector<Point>> Regression::SimpleParser(std::vector<Point> poin
             continue;
         }
 
-        //extend current section
+        //extend current subgroup
         previousSlope = slope;
 		largestSlope = (abs(slope) > abs(largestSlope)) ? slope : largestSlope;
-		section.push_back(p);
+		subgroup.push_back(p);
 		previousPoint = p;
     }
-    trends.push_back(section);
-    return trends;
+    subgroupList.push_back(subgroup);
+    return subgroupList;
 }
 
 void Regression::linearLeastSquares(const std::vector<Point>& points, double& Beta0, double& Beta1) {
@@ -93,4 +94,50 @@ void Regression::quadraticLeastSquares(const std::vector<Point>&points, double& 
     a = X(0);
     b = X(1);
     c = X(2);
+}
+
+double Regression::SUM(std::vector<xyEnumerator> values, std::vector<Point> points)
+{
+    if (values.size() == 0) {
+        throw;
+    }
+    if (points.size() == 0) {
+        return 0;
+    }
+
+    double sum = 0;
+    for (Point p : points) {
+        double term = 1;
+        for (xyEnumerator val : values) {
+            switch (val) {
+            case xyEnumerator::x:
+                term *= p.x;
+                break;
+            case xyEnumerator::y:
+                term *= p.y;
+                break;
+            }
+            
+        }
+        sum += term;
+    }
+    return sum;
+}
+
+double Regression::SUM(std::vector<char> values, std::vector<Point> points) {
+    std::vector<xyEnumerator> xyValues;
+	for (char val : values) {
+        switch (val) {
+		case 'x':
+			xyValues.push_back(xyEnumerator::x);
+			break;
+        case 'y':
+			xyValues.push_back(xyEnumerator::y);
+			break;
+        default:
+            throw;
+            break;
+        }
+	}
+    return SUM(xyValues, points);
 }
