@@ -1,6 +1,6 @@
 #include "Regression.h"
 
-std::vector<std::vector<Point>> Regression::SimpleParser(std::vector<Point> points)
+std::vector<std::vector<Point>> Regression::SimpleParser(const std::vector<Point>& data)
 {
 	std::vector<std::vector<Point>> subgroupList;
 	std::vector<Point> subgroup;
@@ -9,7 +9,7 @@ std::vector<std::vector<Point>> Regression::SimpleParser(std::vector<Point> poin
     Point previousPoint{ 0, 0 };
     
 
-    for (Point p : points) {
+    for (Point p : data) {
         //first subgroup
         if (subgroup.size() == 0) {
             subgroup.push_back(p);
@@ -62,8 +62,8 @@ void Regression::linearLeastSquares(const std::vector<Point>& points, double& Be
         Sxy += (p.x) * (p.y);
     }
 
-    //Beta0 = // complete the code
-    //Beta1 = // complete the code
+	Beta1 = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx);
+	Beta0 = (Sy - Beta1 * Sx) / n;
 }
 
 void Regression::quadraticLeastSquares(const std::vector<Point>&points, double& a, double& b, double& c) {
@@ -94,6 +94,11 @@ void Regression::quadraticLeastSquares(const std::vector<Point>&points, double& 
     a = X(0);
     b = X(1);
     c = X(2);
+}
+
+SubgroupDegree Regression::BestFitDegree(const std::vector<Point>& subgroup)
+{
+    return SubgroupDegree();
 }
 
 double Regression::SUM(std::vector<xyEnumerator> values, std::vector<Point> points)
@@ -140,4 +145,16 @@ double Regression::SUM(std::vector<char> values, std::vector<Point> points) {
         }
 	}
     return SUM(xyValues, points);
+}
+
+double Regression::AverageError(std::vector<Point>& subdomain, double a, double b, double c)
+{
+    double sumError = 0;
+
+	for (Point p : subdomain) {
+		double y = a * p.x * p.x + b * p.x + c;
+		sumError += abs(p.y - y);
+	}
+
+    return sumError/subdomain.size();
 }
