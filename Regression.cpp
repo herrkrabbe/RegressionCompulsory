@@ -54,13 +54,11 @@ void Regression::linearLeastSquares(const std::vector<Point>& points, double& Be
     int n = points.size();
     double Sx = 0, Sy = 0, Sxx = 0, Sxy = 0, Syy = 0;
 
-    for (const Point p : points) {
-        Sx += p.x;
-        Sy += p.y;
-        Sxx += (p.x) * (p.x);
-        Syy += (p.y) * (p.y);
-        Sxy += (p.x) * (p.y);
-    }
+	Sx = SUM({ 'x' }, points);
+	Sy = SUM({ 'y' }, points);
+	Sxx = SUM({ 'x', 'x' }, points);
+	Syy = SUM({ 'y', 'y' }, points);
+	Sxy = SUM({ 'x', 'y' }, points);
 
 	Beta1 = (n * Sxy - Sx * Sy) / (n * Sxx - Sx * Sx);
 	Beta0 = (Sy - Beta1 * Sx) / n;
@@ -70,15 +68,13 @@ void Regression::quadraticLeastSquares(const std::vector<Point>&points, double& 
     int n = points.size();
     double Sx = 0, Sy = 0, Sxx = 0, Sxxx = 0, Sxxxx = 0, Sxy = 0, Sxxy = 0;
 
-    for (const auto& p : points) {
-        Sx += p.x;
-        Sy += p.y;
-        Sxx += p.x * p.x;
-        Sxxx += p.x * p.x * p.x;
-        Sxxxx += p.x * p.x * p.x * p.x;
-        Sxy += p.x * p.y;
-        Sxxy += p.x * p.x * p.y;
-    }
+	Sx = SUM({ 'x' }, points);
+    Sy = SUM({ 'y' }, points);
+    Sxx = SUM({ 'x', 'x'}, points);
+	Sxxx = SUM({ 'x', 'x', 'x' }, points);
+	Sxxxx = SUM({ 'x', 'x', 'x', 'x' }, points);
+	Sxy = SUM({ 'x', 'y' }, points);
+	Sxxy = SUM({ 'x', 'x', 'y' }, points);
 
     // Solve using Eigen for Ax = B (Matrix Form)
     Eigen::Matrix3d A;
@@ -98,20 +94,31 @@ void Regression::quadraticLeastSquares(const std::vector<Point>&points, double& 
 
 SubgroupDegree Regression::BestFitDegree(const std::vector<Point>& subgroup)
 {
-    return SubgroupDegree();
+    double a = 0;
+    double b = 0;
+    double c = 0;
+
+	std::vector<std::vector<Point>> datasets = CreateTestingDataset(subgroup);
+    
+	linearLeastSquares(datasets[0], c, b);
+    double errorLinear = AverageError(datasets[1], a, b, c);
+	quadraticLeastSquares(datasets[0], a, b, c);
+    double errorQuadratic = AverageError(datasets[1], a, b, c);
+
+	return (errorLinear < errorQuadratic) ? SubgroupDegree{ subgroup, 1 } : SubgroupDegree{ subgroup, 2 };
 }
 
-double Regression::SUM(std::vector<xyEnumerator> values, std::vector<Point> points)
+double Regression::SUM(std::vector<xyEnumerator> values, const std::vector<Point>& points)
 {
     if (values.size() == 0) {
         throw;
     }
     if (points.size() == 0) {
-        return 0;
+        throw;
     }
 
     double sum = 0;
-    for (Point p : points) {
+    for (const Point p : points) {
         double term = 1;
         for (xyEnumerator val : values) {
             switch (val) {
@@ -129,7 +136,7 @@ double Regression::SUM(std::vector<xyEnumerator> values, std::vector<Point> poin
     return sum;
 }
 
-double Regression::SUM(std::vector<char> values, std::vector<Point> points) {
+double Regression::SUM(std::vector<char> values, const std::vector<Point>& points) {
     std::vector<xyEnumerator> xyValues;
 	for (char val : values) {
         switch (val) {
@@ -147,14 +154,33 @@ double Regression::SUM(std::vector<char> values, std::vector<Point> points) {
     return SUM(xyValues, points);
 }
 
-double Regression::AverageError(std::vector<Point>& subdomain, double a, double b, double c)
+double Regression::AverageError(const std::vector<Point>& subgroup, double a, double b, double c)
 {
     double sumError = 0;
 
-	for (Point p : subdomain) {
+	for (Point p : subgroup) {
 		double y = a * p.x * p.x + b * p.x + c;
 		sumError += abs(p.y - y);
 	}
 
-    return sumError/subdomain.size();
+    return sumError/subgroup.size();
+}
+
+std::vector<std::vector<Point>> Regression::CreateTestingDataset(std::vector<Point> data)
+{   
+    int trainingThreshold = 70;
+	std::vector<Point> trainingData;
+	std::vector<Point> testingData;
+
+	for (Point p : data) {
+		int random = rand() % 100;
+		if (random < trainingThreshold) {
+			trainingData.push_back(p);
+		}
+		else {
+			testingData.push_back(p);
+		}
+	}
+
+    return {trainingData, testingData};
 }

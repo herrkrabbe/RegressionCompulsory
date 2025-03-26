@@ -15,9 +15,15 @@ namespace Regression {
 
 	SubgroupDegree BestFitDegree(const std::vector<Point>& subgroup);
 
-	double SUM(std::vector<xyEnumerator> values, std::vector<Point> points);
+	double SUM(std::vector<xyEnumerator> values, const std::vector<Point>& points);
 
-	double SUM(std::vector<char> values, std::vector<Point> points);
+	double SUM(std::vector<char> values, const std::vector<Point>& points);
 
-	double AverageError(std::vector<Point> subdomain, double a, double b, double c);
+	double AverageError(const std::vector<Point>& subgroup, double a, double b, double c);
+
+	/*
+	* Function takes a dataset, and separates it into a training and testing dataset.
+	* The 0 return index is the trainind data, and the 1 index is the testing data.
+	*/
+	std::vector<std::vector<Point>> CreateTestingDataset(std::vector<Point> data);
 }

@@ -8,6 +8,8 @@
 
 int main()
 {
+    srand(0);
+
     std::vector<Point> points = { {1.0, 6.948357}, {2.0, 5.730868}, {3.0, 5.623844}, {4.0, 5.961515},
     {5.0, 5.382923}, {6.0, 6.082932}, {7.0, 8.089606}, {8.0, 9.183717},
     {9.0, 10.46526}, {10.0, 13.27128}, {11.0, 15.46829}, {12.0, 18.56714},
@@ -29,9 +31,20 @@ int main()
 
 	for (std::vector<Point> section : trends) {
 		std::cout << "New Section:" << std::endl;
+	    SubgroupDegree degr = Regression::BestFitDegree(section);
         double a, b, c;
-		Regression::quadraticLeastSquares(section, a, b, c);
-		std::cout << "Best fit curve: y = " << a << "x^2 + " << b << "x + " << c << std::endl;
+		if (degr.polynomialDegree == 1)
+		{
+			double a, b;
+			Regression::linearLeastSquares(section, c, b);
+			std::cout << "Best fit line: y = " << b << "x + " << c << std::endl;
+		}
+		else
+		{
+			
+			Regression::quadraticLeastSquares(section, a, b, c);
+			std::cout << "Best fit curve: y = " << a << "x^2 + " << b << "x + " << c << std::endl;
+		}
 		for (Point p : section) {
 			std::cout << p.x << " " << p.y << std::endl;
 		}
